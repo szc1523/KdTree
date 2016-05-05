@@ -8,6 +8,7 @@ public class KdTree {
     private int N;  // the number of Nodes
     private class Node {
         private final Point2D point;
+        // cycle can be deleted!!!
         private final boolean cycle; //true compares left, false compares right
         private Node left, right;
        
@@ -35,7 +36,7 @@ public class KdTree {
     public void insert(Point2D p) {
         if (p == null) throw new NullPointerException("null pointer!");   
         
-        root = insert(root, p, true);  // true is for initialize
+        if (!contains(p)) root = insert(root, p, true);  // true is for initialize
     }
     // p: point x: node c: cycle of parent
     private Node insert(Node n, Point2D p, boolean c) {
@@ -68,6 +69,7 @@ public class KdTree {
         return false;
     }
     
+    //it seems write two function drawH() and drawV() is better!!!
     public void draw() {
         draw(null, root, 0.0, 1.0, 0.0, 1.0);
     }
@@ -110,20 +112,6 @@ public class KdTree {
         }
     }
     
-
-    // <Node> is for the cycle field to draw
-    private Iterable<Node> keys() {
-        Queue<Node> q = new Queue<Node>();
-        return keys(root, q);
-    }
-    
-    private Iterable<Node> keys(Node n, Queue<Node> q) {
-        if (n.left != null) keys(n.left, q); //forget n.left != null !!
-        q.enqueue(n);
-        if (n.right != null) keys(n.right, q);
-        return q;
-    }
-        
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new NullPointerException("null pointer!");
         
@@ -137,7 +125,19 @@ public class KdTree {
         return null;
     }
     
-
+    // obsolete! draw don't use these function
+    // <Node> is for the cycle field to draw
+/*    private Iterable<Node> keys() {
+        Queue<Node> q = new Queue<Node>();
+        return keys(root, q);
+    }
+    
+    private Iterable<Node> keys(Node n, Queue<Node> q) {
+        if (n.left != null) keys(n.left, q); //forget n.left != null !!
+        q.enqueue(n);
+        if (n.right != null) keys(n.right, q);
+        return q;
+    }*/
     
     
     public static void main(String[] args) {
