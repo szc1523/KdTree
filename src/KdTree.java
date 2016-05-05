@@ -69,10 +69,11 @@ public class KdTree {
     }
     
     public void draw() {
-        draw(null, root);
+        draw(null, root, 0.0, 1.0, 0.0, 1.0);
     }
     
-    private void draw(Node nUp, Node n) {
+    private void draw(Node nUp, Node n, double xmin, double xmax, 
+            double ymin, double ymax) {
         //draw current node
         StdDraw.setPenRadius(.01);
         StdDraw.setPenColor(StdDraw.BLACK);        
@@ -87,20 +88,26 @@ public class KdTree {
         else if (n.cycle) {
             StdDraw.setPenColor(StdDraw.RED);
             if (n.point.y() < nUp.point.y())
-                StdDraw.line(n.point.x(), 0, n.point.x(), nUp.point.y());        
+                StdDraw.line(n.point.x(), ymin, n.point.x(), nUp.point.y());        
             else 
-                StdDraw.line(n.point.x(), nUp.point.y(), n.point.x(), 1); 
+                StdDraw.line(n.point.x(), nUp.point.y(), n.point.x(), ymax); 
         }
         else {
             StdDraw.setPenColor(StdDraw.BLUE);
             if (n.point.x() < nUp.point.x())
-                StdDraw.line(0, n.point.y(), nUp.point.x(), n.point.y()); 
+                StdDraw.line(xmin, n.point.y(), nUp.point.x(), n.point.y()); 
             else 
-                StdDraw.line(nUp.point.x(), n.point.y(), 1, n.point.y());                 
+                StdDraw.line(nUp.point.x(), n.point.y(), xmax, n.point.y());                 
         }        
         //draw leaves
-        if (n.left != null)  draw(n, n.left);
-        if (n.right != null) draw(n, n.right);
+        if (n.left != null)  {
+            if (n.cycle) draw(n, n.left,  xmin, n.point.x(), ymin, ymax);
+            else         draw(n, n.left,  xmin, xmax, ymin, n.point.y());
+        }
+        if (n.right != null) {
+            if (n.cycle) draw(n, n.right, n.point.x(), xmax, ymin, ymax);
+            else         draw(n, n.right, xmin, xmax, n.point.y(), ymax);
+        }
     }
     
 
