@@ -176,33 +176,68 @@ public class KdTree {
                 
         // recurse: first go to the side with closer distance
         int d = pointdist(p, n);
+/*        if (d < 0) {
+            if (n.left != null && n.cycle) {
+                pm = nearest(p, n.left,  pm, xmin, n.point.x(), ymin, ymax);
+                if
+                pm = nearest(p, n.right, pm, n.point.x(), xmax, ymin, ymax);
+            }
+            else if (n.left != null) {
+                pm = nearest(p, n.left,  pm, xmin, xmax, ymin, n.point.y());
+                if
+                pm = nearest(p, n.right, pm, xmin, xmax, n.point.y(), ymax);
+            }
+        }
+        else {
+            if (n.right != null && n.cycle) {
+                pm = nearest(p, n.right, pm, n.point.x(), xmax, ymin, ymax);
+                if
+                pm = nearest(p, n.left,  pm, xmin, n.point.x(), ymin, ymax);
+            }
+            else if (n.right != null) {
+                pm = nearest(p, n.right, pm, xmin, xmax, n.point.y(), ymax);
+                if
+                pm = nearest(p, n.left,  pm, xmin, xmax, ymin, n.point.y());
+            }
+        }
+        */        
+        double xTemp = Double.NaN;
+        double yTemp = Double.NaN;
 
         if (d < 0) {
             if (n.left != null) {
-                if (n.cycle) 
-                    pm = nearest(p, n.left,  pm, xmin, n.point.x(), ymin, ymax);
-                else         
-                    pm = nearest(p, n.left,  pm, xmin, xmax, ymin, n.point.y());
+                if (n.cycle) {
+                    xTemp = n.point.x();
+                    pm = nearest(p, n.left,  pm, xmin, xTemp, ymin, ymax);
+                }
+                else {        
+                    yTemp = n.point.y();
+                    pm = nearest(p, n.left,  pm, xmin, xmax, ymin, yTemp);
+                }
             }
             if (n.right != null) {
                 if (n.cycle) 
-                    pm = nearest(p, n.right, pm, n.point.x(), xmax, ymin, ymax);
+                    pm = nearest(p, n.right, pm, xTemp, xmax, ymin, ymax);
                 else         
-                    pm = nearest(p, n.right, pm, xmin, xmax, n.point.y(), ymax);
+                    pm = nearest(p, n.right, pm, xmin, xmax, yTemp, ymax);
             }
         }
         else {
             if (n.right != null) {
-                if (n.cycle)
-                    pm = nearest(p, n.right, pm, n.point.x(), xmax, ymin, ymax);
-                else        
-                    pm = nearest(p, n.right, pm, xmin, xmax, n.point.y(), ymax);
+                if (n.cycle) {
+                    xTemp = n.point.x();
+                    pm = nearest(p, n.right, pm, xTemp, xmax, ymin, ymax);
+                }
+                else {       
+                    yTemp = n.point.y();
+                    pm = nearest(p, n.right, pm, xmin, xmax, yTemp, ymax);
+                }
             }
             if (n.left != null) {
                 if (n.cycle) 
-                    pm = nearest(p, n.left,  pm, xmin, n.point.x(), ymin, ymax);
+                    pm = nearest(p, n.left,  pm, xmin, xTemp, ymin, ymax);
                 else         
-                    pm = nearest(p, n.left,  pm, xmin, xmax, ymin, n.point.y());
+                    pm = nearest(p, n.left,  pm, xmin, xmax, ymin, yTemp);
             }
         }
         return pm;
