@@ -24,7 +24,7 @@ public class PointSET {
     }
     
     public boolean contains(Point2D p) {
-        if (p == null) throw new NullPointerException("null pointer!");                
+        if (p == null) throw new NullPointerException("null pointer!");
         return s.contains(p);
     }
     

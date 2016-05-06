@@ -12,7 +12,7 @@ public class KdTree {
         private final boolean cycle; //true compares left, false compares right
         private Node left, right;
        
-        public Node (Point2D p, boolean d){
+        Node(Point2D p, boolean d) {
             point = p;
             cycle = d;
             left = null;
@@ -22,6 +22,7 @@ public class KdTree {
     
     public KdTree() {
        N = 0;
+       root = null;
     }
     
     public boolean isEmpty() {
@@ -35,7 +36,7 @@ public class KdTree {
     // the second insert simulates the BST code of package algs4
     public void insert(Point2D p) {
         if (p == null) throw new NullPointerException("null pointer!");   
-        
+        // can avoid contains() check to speed up
         if (!contains(p)) root = insert(root, p, true);  // true is for initialize
     }
     // p: point x: node c: cycle of parent
@@ -54,24 +55,27 @@ public class KdTree {
         return n;        
     }
     
+    // insert must be a recursion while contains can be a while loop
     public boolean contains(Point2D p) {
         if (p == null) throw new NullPointerException("null pointer!");         
-            
+
+        if (N == 0) return false;    
         Node n = root;
         int cmp;
         while (n != null) {
-            if(n.cycle) cmp = Point2D.X_ORDER.compare(p, n.point);
-            else        cmp = Point2D.Y_ORDER.compare(p, n.point);
-            if (cmp < 0)      n = n.left;
-            else if (cmp > 0) n = n.right;
-            else              return p.equals(n.point);
+            if (p.equals(n.point)) return true;
+            if (n.cycle) cmp = Point2D.X_ORDER.compare(p, n.point);
+            else         cmp = Point2D.Y_ORDER.compare(p, n.point);
+            if (cmp < 0)  n = n.left;
+            else          n = n.right;
         }    
         return false;
     }
     
     //it seems write two function drawH() and drawV() is better!!!
     public void draw() {
-        draw(null, root, 0.0, 1.0, 0.0, 1.0);
+        if (N != 0)
+            draw(null, root, 0.0, 1.0, 0.0, 1.0);
     }
     
     private void draw(Node nUp, Node n, double xmin, double xmax, 
@@ -83,7 +87,7 @@ public class KdTree {
         
         //draw line
         StdDraw.setPenRadius();
-        if (nUp ==null) {
+        if (nUp == null) {
             StdDraw.setPenColor(StdDraw.RED);
             StdDraw.line(n.point.x(), 0, n.point.x(), 1);
         }
@@ -99,7 +103,7 @@ public class KdTree {
             if (n.point.x() < nUp.point.x())
                 StdDraw.line(xmin, n.point.y(), nUp.point.x(), n.point.y()); 
             else 
-                StdDraw.line(nUp.point.x(), n.point.y(), xmax, n.point.y());                 
+                StdDraw.line(nUp.point.x(), n.point.y(), xmax, n.point.y());
         }        
         //draw leaves
         if (n.left != null)  {
@@ -114,8 +118,9 @@ public class KdTree {
     
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new NullPointerException("null pointer!");        
-        Queue<Point2D> q = new Queue<Point2D>();               
-        range(q, rect, root,  0.0, 1.0, 0.0, 1.0);
+        Queue<Point2D> q = new Queue<Point2D>();    
+        if (N != 0) // check if there is a node in tree
+            range(q, rect, root,  0.0, 1.0, 0.0, 1.0);
         return q;
     }
     
@@ -125,7 +130,7 @@ public class KdTree {
         if (!rect.intersects(nR)) return; 
         if (rect.contains(n.point)) q.enqueue(n.point);
         // go left
-        if (n.left != null){
+        if (n.left != null) {
             if (n.cycle) range(q, rect, n.left,  xmin, n.point.x(), ymin, ymax);
             else         range(q, rect, n.left,  xmin, xmax, ymin, n.point.y());
         }
@@ -139,48 +144,65 @@ public class KdTree {
     
     public Point2D nearest(Point2D p) {
         if (p == null) throw new NullPointerException("null pointer!");
+        if (N == 0) return null; // check if there is a node in tree
         Point2D pm = new Point2D(root.point.x(), root.point.y());
         pm = nearest(p, root, pm, 0, 1, 0, 1);    
         return pm;
     }
     
-    public Point2D nearest(Point2D p, Node n, Point2D pm, 
+    private Point2D nearest(Point2D p, Node n, Point2D pm, 
             double xmin, double xmax, double ymin, double ymax) {
         // prune function 
         RectHV nR = new RectHV(xmin, ymin, xmax, ymax);
-        if (p.distanceTo(pm) < nR.distanceTo(p)) return pm;   
+        if (p.distanceSquaredTo(pm) < nR.distanceSquaredTo(pm)) return pm;   
         //refresh pm
-        if (p.distanceTo(n.point) < p.distanceTo(pm)) pm = n.point;
+        if (p.distanceSquaredTo(n.point) < p.distanceSquaredTo(pm)) pm = n.point;
                 
         // recurse: first go to the side with closer distance
         int d = pointdist(p, n);
         if (d < 0) {
             if (n.left != null) {
-                if (n.cycle) pm = nearest(p, n.left,  pm, xmin, n.point.x(), ymin, ymax);
-                else         pm = nearest(p, n.left,  pm, xmin, xmax, ymin, n.point.y());
+                if (n.cycle) 
+                    pm = nearest(p, n.left,  pm, xmin, n.point.x(), ymin, ymax);
+                else         
+                    pm = nearest(p, n.left,  pm, xmin, xmax, ymin, n.point.y());
             }
             if (n.right != null) {
-                if (n.cycle) pm = nearest(p, n.right, pm, n.point.x(), xmax, ymin, ymax);
-                else         pm = nearest(p, n.right, pm, xmin, xmax, n.point.y(), ymax);
+                if (n.cycle) 
+                    pm = nearest(p, n.right, pm, n.point.x(), xmax, ymin, ymax);
+                else         
+                    pm = nearest(p, n.right, pm, xmin, xmax, n.point.y(), ymax);
             }
         }
         else {
             if (n.right != null) {
-                if (n.cycle) pm = nearest(p, n.right, pm, n.point.x(), xmax, ymin, ymax);
-                else         pm = nearest(p, n.right, pm, xmin, xmax, n.point.y(), ymax);
+                if (n.cycle)
+                    pm = nearest(p, n.right, pm, n.point.x(), xmax, ymin, ymax);
+                else        
+                    pm = nearest(p, n.right, pm, xmin, xmax, n.point.y(), ymax);
             }
+            
             if (n.left != null) {
-                if (n.cycle) pm = nearest(p, n.left,  pm, xmin, n.point.x(), ymin, ymax);
-                else         pm = nearest(p, n.left,  pm, xmin, xmax, ymin, n.point.y());
+                if (n.cycle) 
+                    pm = nearest(p, n.left,  pm, xmin, n.point.x(), ymin, ymax);
+                else         
+                    pm = nearest(p, n.left,  pm, xmin, xmax, ymin, n.point.y());
             }
         }        
         return pm;
     }
     
+    // when submitting , server throws no such method for distanceToOrder()
     private int pointdist(Point2D p, Node n) {
         if (n.left == null) return 1;
         else if (n.right == null) return -1;
-        else return p.distanceToOrder().compare(n.left.point, n.right.point);
+        else {
+            double dist1 = p.distanceSquaredTo(n.left.point);
+            double dist2 = p.distanceSquaredTo(n.right.point);
+            if      (dist1 < dist2) return -1;
+            else if (dist1 > dist2) return +1;
+            else                    return  0;
+        }
     }
     
     // obsolete! draw don't use these function
