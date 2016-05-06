@@ -123,22 +123,64 @@ public class KdTree {
             double xmax, double ymin, double ymax) {
         RectHV nR = new RectHV(xmin, ymin, xmax, ymax);
         if (!rect.intersects(nR)) return; 
-        if (rect.contains(n.point)) 
-            q.enqueue(n.point);
-        if (n.left != null) {
+        if (rect.contains(n.point)) q.enqueue(n.point);
+        // go left
+        if (n.left != null){
             if (n.cycle) range(q, rect, n.left,  xmin, n.point.x(), ymin, ymax);
             else         range(q, rect, n.left,  xmin, xmax, ymin, n.point.y());
         }
+        // go right
         if (n.right != null) {
             if (n.cycle) range(q, rect, n.right, n.point.x(), xmax, ymin, ymax);
             else         range(q, rect, n.right, xmin, xmax, n.point.y(), ymax);
         }
+
     }
     
     public Point2D nearest(Point2D p) {
         if (p == null) throw new NullPointerException("null pointer!");
+        Point2D pm = new Point2D(root.point.x(), root.point.y());
+        pm = nearest(p, root, pm, 0, 1, 0, 1);    
+        return pm;
+    }
+    
+    public Point2D nearest(Point2D p, Node n, Point2D pm, 
+            double xmin, double xmax, double ymin, double ymax) {
+        // prune function 
+        RectHV nR = new RectHV(xmin, ymin, xmax, ymax);
+        if (p.distanceTo(pm) < nR.distanceTo(p)) return pm;   
+        //refresh pm
+        if (p.distanceTo(n.point) < p.distanceTo(pm)) pm = n.point;
                 
-        return null;
+        // recurse: first go to the side with closer distance
+        int d = pointdist(p, n);
+        if (d < 0) {
+            if (n.left != null) {
+                if (n.cycle) pm = nearest(p, n.left,  pm, xmin, n.point.x(), ymin, ymax);
+                else         pm = nearest(p, n.left,  pm, xmin, xmax, ymin, n.point.y());
+            }
+            if (n.right != null) {
+                if (n.cycle) pm = nearest(p, n.right, pm, n.point.x(), xmax, ymin, ymax);
+                else         pm = nearest(p, n.right, pm, xmin, xmax, n.point.y(), ymax);
+            }
+        }
+        else {
+            if (n.right != null) {
+                if (n.cycle) pm = nearest(p, n.right, pm, n.point.x(), xmax, ymin, ymax);
+                else         pm = nearest(p, n.right, pm, xmin, xmax, n.point.y(), ymax);
+            }
+            if (n.left != null) {
+                if (n.cycle) pm = nearest(p, n.left,  pm, xmin, n.point.x(), ymin, ymax);
+                else         pm = nearest(p, n.left,  pm, xmin, xmax, ymin, n.point.y());
+            }
+        }        
+        return pm;
+    }
+    
+    private int pointdist(Point2D p, Node n) {
+        if (n.left == null) return 1;
+        else if (n.right == null) return -1;
+        else return p.distanceToOrder().compare(n.left.point, n.right.point);
     }
     
     // obsolete! draw don't use these function

@@ -39,6 +39,8 @@ public class NearestNeighborVisualizer {
             // the location (x, y) of the mouse
             double x = StdDraw.mouseX();
             double y = StdDraw.mouseY();
+            //double x = 0.99;
+            //double y = 0.65;
             Point2D query = new Point2D(x, y);
 
             // draw all of the points
