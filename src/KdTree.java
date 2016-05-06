@@ -6,6 +6,12 @@ import edu.princeton.cs.algs4.StdDraw;
 public class KdTree {
     private Node root; //the top node
     private int N;  // the number of Nodes
+    //private int cnt;
+    private double min;
+/*    public int getc() {
+        return cnt;
+    }*/
+    
     private class Node {
         private final Point2D point;
         // cycle can be deleted!!!
@@ -21,6 +27,8 @@ public class KdTree {
     }
     
     public KdTree() {
+       //cnt = 0;
+       min = Double.MAX_VALUE;
        N = 0;
        root = null;
     }
@@ -145,21 +153,30 @@ public class KdTree {
     public Point2D nearest(Point2D p) {
         if (p == null) throw new NullPointerException("null pointer!");
         if (N == 0) return null; // check if there is a node in tree
+        min = Double.MAX_VALUE;
         Point2D pm = new Point2D(root.point.x(), root.point.y());
         pm = nearest(p, root, pm, 0, 1, 0, 1);    
         return pm;
     }
     
-    private Point2D nearest(Point2D p, Node n, Point2D pm, 
+    private Point2D nearest(Point2D p, Node n, Point2D pm,  
             double xmin, double xmax, double ymin, double ymax) {
+        
         // prune function 
         RectHV nR = new RectHV(xmin, ymin, xmax, ymax);
-        if (p.distanceSquaredTo(pm) < nR.distanceSquaredTo(pm)) return pm;   
+        if (min < nR.distanceSquaredTo(p)) return pm;   
+        
+        //cnt++;
         //refresh pm
-        if (p.distanceSquaredTo(n.point) < p.distanceSquaredTo(pm)) pm = n.point;
+        double mint = p.distanceSquaredTo(n.point);
+        if (mint < min) {
+            pm  = n.point;
+            min = mint;
+        }
                 
         // recurse: first go to the side with closer distance
         int d = pointdist(p, n);
+
         if (d < 0) {
             if (n.left != null) {
                 if (n.cycle) 
@@ -181,14 +198,13 @@ public class KdTree {
                 else        
                     pm = nearest(p, n.right, pm, xmin, xmax, n.point.y(), ymax);
             }
-            
             if (n.left != null) {
                 if (n.cycle) 
                     pm = nearest(p, n.left,  pm, xmin, n.point.x(), ymin, ymax);
                 else         
                     pm = nearest(p, n.left,  pm, xmin, xmax, ymin, n.point.y());
             }
-        }        
+        }
         return pm;
     }
     

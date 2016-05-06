@@ -34,13 +34,21 @@ public class NearestNeighborVisualizer {
             brute.insert(p);
         }
 
+/*        double x = 0.81;
+        double y = 0.30;
+        Point2D query = new Point2D(x, y);
+        StdDraw.setPenColor(StdDraw.BLUE);
+        kdtree.nearest(query).draw();
+        StdDraw.show(0);
+        StdDraw.show(40);
+        StdOut.println(kdtree.getc());*/
+        
         while (true) {
 
             // the location (x, y) of the mouse
             double x = StdDraw.mouseX();
             double y = StdDraw.mouseY();
-            //double x = 0.99;
-            //double y = 0.65;
+
             Point2D query = new Point2D(x, y);
 
             // draw all of the points
@@ -60,6 +68,7 @@ public class NearestNeighborVisualizer {
             kdtree.nearest(query).draw();
             StdDraw.show(0);
             StdDraw.show(40);
+            //StdOut.println(kdtree.getc());
         }
     }
 }
