@@ -64,7 +64,7 @@ public class KdTree {
             else        cmp = Point2D.Y_ORDER.compare(p, n.point);
             if (cmp < 0)      n = n.left;
             else if (cmp > 0) n = n.right;
-            else              return true;
+            else              return p.equals(n.point);
         }    
         return false;
     }
@@ -113,10 +113,26 @@ public class KdTree {
     }
     
     public Iterable<Point2D> range(RectHV rect) {
-        if (rect == null) throw new NullPointerException("null pointer!");
-        
-        
-        return null;
+        if (rect == null) throw new NullPointerException("null pointer!");        
+        Queue<Point2D> q = new Queue<Point2D>();               
+        range(q, rect, root,  0.0, 1.0, 0.0, 1.0);
+        return q;
+    }
+    
+    private void range(Queue<Point2D> q, RectHV rect, Node n, double xmin, 
+            double xmax, double ymin, double ymax) {
+        RectHV nR = new RectHV(xmin, ymin, xmax, ymax);
+        if (!rect.intersects(nR)) return; 
+        if (rect.contains(n.point)) 
+            q.enqueue(n.point);
+        if (n.left != null) {
+            if (n.cycle) range(q, rect, n.left,  xmin, n.point.x(), ymin, ymax);
+            else         range(q, rect, n.left,  xmin, xmax, ymin, n.point.y());
+        }
+        if (n.right != null) {
+            if (n.cycle) range(q, rect, n.right, n.point.x(), xmax, ymin, ymax);
+            else         range(q, rect, n.right, xmin, xmax, n.point.y(), ymax);
+        }
     }
     
     public Point2D nearest(Point2D p) {

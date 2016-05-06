@@ -3,10 +3,10 @@ import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.SET;
 
-public class PointSet {
+public class PointSET {
     private SET<Point2D> s; //a red black tree to store elements
     
-    public PointSet() {
+    public PointSET() {
         s = new SET<Point2D>();
     }
     
